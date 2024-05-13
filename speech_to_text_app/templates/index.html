@@ -1,0 +1,86 @@
+<!-- speech_to_text.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Speech to Text</title>
+    <style>
+        #output {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 80%;
+            min-height: 100px;
+        }
+        #listening-indicator {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Speech to Text</h1>
+    <div>
+        <button id="start-btn">Start</button>
+        <button id="stop-btn">Stop</button>
+        <select id="language-select">
+            <option value="en-US">English</option>
+            <option value="hi-IN">Bengali</option>
+        </select>
+    </div>
+    <div id="listening-indicator">Not Listening</div>
+    <div style="border: 1px solid gray; height: 300px; border-radius: 8px;" contenteditable="true">
+        <span id="output"></span>
+        <span id="interim"></span>
+    </div>
+    <script>
+        let recognition = new webkitSpeechRecognition();
+        let selectedLanguage = document.getElementById('language-select');
+        let final_transcript = "";
+        
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 0;
+        recognition.lang = "en";
+
+        recognition.onstart = function() {
+            document.getElementById('listening-indicator').textContent = 'Listening...';
+            document.getElementById('listening-indicator').style.color = 'green';
+        };
+
+        recognition.onerror = () => {
+            document.getElementById('listening-indicator').textContent = 'not Listening...';
+        }
+
+        recognition.onend = () => {
+            document.getElementById('listening-indicator').style.display = "finished...";
+        }
+
+        recognition.onresult = function(event) {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    final_transcript += event.results[i][0].transcript;
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
+                }
+            }
+            document.getElementById('output').innerHTML = final_transcript;
+            document.getElementById('interim').innerHTML= interimTranscript;
+        };
+
+        document.getElementById('start-btn').addEventListener('click', function() {
+            recognition.lang = selectedLanguage.value;
+            recognition.start();
+        });
+
+        document.getElementById('stop-btn').addEventListener('click', function() {
+            recognition.stop();
+            document.getElementById('listening-indicator').textContent = 'Not Listening';
+            document.getElementById('listening-indicator').style.color = 'red';
+        });
+    </script>
+</body>
+</html>

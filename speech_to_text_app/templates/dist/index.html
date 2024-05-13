@@ -1,0 +1,329 @@
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real-Time Speech-to-Text</title>
+</head>
+<body>
+    <h1>Real-Time Speech-to-Text</h1>
+
+    <div>
+        <label for="language">Select Language:</label>
+        <select id="language">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="mr">Marathi</option>
+        </select>
+    </div>
+
+    <div>
+        <textarea id="live-text" rows="10" cols="50" readonly></textarea>
+    </div>
+
+    <div>
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageSelect = document.getElementById('language');
+            const liveText = document.getElementById('live-text');
+            const startButton = document.getElementById('start');
+            const stopButton = document.getElementById('stop');
+
+            // Initialize WebSocket connection
+            const socket = new WebSocket('ws://localhost:8000/ws/speech/');
+
+            startButton.addEventListener('click', function() {
+                // Start speech recognition
+                // Update live text area with recognized text
+                socket.send(JSON.stringify({ action: 'start', language: languageSelect.value }));
+            });
+
+            stopButton.addEventListener('click', function() {
+                // Stop speech recognition
+                socket.send(JSON.stringify({ action: 'stop' }));
+            });
+
+            // Handle incoming messages from WebSocket server
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.text) {
+                    liveText.value += data.text + '\n';
+                }
+            };
+        });
+    </script>
+
+    <!-- Include WebKitSpeechRecognition library -->
+    <script src="https://cdn.jsdelivr.net/npm/webkit-speech-recognition@1.1.1/webkitSpeechRecognition.min.js"></script>
+</body>
+</html> {% endcomment %}
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio-to-Text Transcription</title>
+</head>
+<body>
+    <h1>Audio-to-Text Transcription</h1>
+
+    <div>
+        <input type="file" id="audio-file" accept="audio/*">
+        <button id="transcribe">Transcribe Audio</button>
+    </div>
+
+    <div>
+        <p id="transcription"></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const transcribeButton = document.getElementById('transcribe');
+            const transcription = document.getElementById('transcription');
+
+            transcribeButton.addEventListener('click', function() {
+                const file = document.getElementById('audio-file').files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const audioData = e.target.result;
+                        // Send audio data to server for transcription
+                        fetch('/transcribe/', {
+                            method: 'POST',
+                            body: audioData
+                        })
+                        .then(response => response.text())
+                        .then(data => {
+                            transcription.innerText = data;
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Please select an audio file.');
+                }
+            });
+        });
+    </script>
+</body>
+</html> {% endcomment %}
+
+
+
+<!-- speech_to_text.html -->
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Speech to Text</title>
+    <style>
+        #output {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #listening-indicator {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Speech to Text</h1>
+    <div id="listening-indicator">Listening...</div>
+    <div id="output"></div>
+
+    <script>
+        var recognition = new webkitSpeechRecognition();
+        recognition.onstart = function() {
+            document.getElementById('listening-indicator').textContent = 'Listening...';
+            document.getElementById('listening-indicator').style.color = 'green';
+        };
+        recognition.onresult = function(event) {
+            document.getElementById('output').textContent = event.results[0][0].transcript;
+        };
+        recognition.start();
+    </script>
+</body>
+</html> {% endcomment %}
+
+<!-- speech_to_text.html -->
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Speech to Text</title>
+    <style>
+        #output {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #listening-indicator {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Speech to Text</h1>
+    <div>
+        <button id="start-btn">Start</button>
+        <button id="stop-btn">Stop</button>
+    </div>
+    <div id="listening-indicator">Not Listening</div>
+    <div id="output"></div>
+
+    <script>
+        var recognition = new webkitSpeechRecognition();
+        recognition.onstart = function() {
+            document.getElementById('listening-indicator').textContent = 'Listening...';
+            document.getElementById('listening-indicator').style.color = 'green';
+        };
+        recognition.onresult = function(event) {
+            document.getElementById('output').textContent = event.results[0][0].transcript;
+        };
+
+        document.getElementById('start-btn').addEventListener('click', function() {
+            recognition.start();
+        });
+
+        document.getElementById('stop-btn').addEventListener('click', function() {
+            recognition.stop();
+            document.getElementById('listening-indicator').textContent = 'Not Listening';
+            document.getElementById('listening-indicator').style.color = 'red';
+        });
+    </script>
+</body>
+</html> {% endcomment %}
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Speech to Text</title>
+    <style>
+        #output {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #listening-indicator {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Speech to Text</h1>
+    <div>
+        <button id="start-btn">Start</button>
+        <button id="stop-btn">Stop</button>
+        <select id="language-select">
+            <option value="en-US">English</option>
+            <option value="hi-IN">Hindi</option>
+            <option value="mr-IN">Marathi</option>
+        </select>
+    </div>
+    <div id="listening-indicator">Not Listening</div>
+    <div id="output"></div>
+
+    <script>
+        var recognition = new webkitSpeechRecognition();
+        var selectedLanguage = document.getElementById('language-select');
+        
+        recognition.onstart = function() {
+            document.getElementById('listening-indicator').textContent = 'Listening...';
+            document.getElementById('listening-indicator').style.color = 'green';
+        };
+
+        recognition.onresult = function(event) {
+            document.getElementById('output').textContent = event.results[0][0].transcript;
+        };
+
+        document.getElementById('start-btn').addEventListener('click', function() {
+            recognition.lang = selectedLanguage.value;
+            recognition.start();
+        });
+
+        document.getElementById('stop-btn').addEventListener('click', function() {
+            recognition.stop();
+            document.getElementById('listening-indicator').textContent = 'Not Listening';
+            document.getElementById('listening-indicator').style.color = 'red';
+        });
+    </script>
+</body>
+</html> {% endcomment %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Speech to Text</title>
+    <style>
+        #output {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 80%;
+            min-height: 100px;
+        }
+        #listening-indicator {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Speech to Text</h1>
+    <div>
+        <button id="start-btn">Start</button>
+        <button id="stop-btn">Stop</button>
+        <select id="language-select">
+            <option value="en-US">English</option>
+            <option value="hi-IN">Bengali</option>
+        </select>
+    </div>
+    <div id="listening-indicator">Not Listening</div>
+    <div id="output" contenteditable="true"></div>
+
+    <script>
+        var recognition = new webkitSpeechRecognition();
+        var selectedLanguage = document.getElementById('language-select');
+
+        recognition.onstart = function() {
+            document.getElementById('listening-indicator').textContent = 'Listening...';
+            document.getElementById('listening-indicator').style.color = 'green';
+        };
+
+        recognition.onresult = function(event) {
+            var interimTranscript = '';
+            for (var i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    interimTranscript += event.results[i][0].transcript;
+                }
+            }
+            document.getElementById('output').textContent = interimTranscript;
+        };
+
+        document.getElementById('start-btn').addEventListener('click', function() {
+            recognition.lang = selectedLanguage.value;
+            recognition.start();
+        });
+
+        document.getElementById('stop-btn').addEventListener('click', function() {
+            recognition.stop();
+            document.getElementById('listening-indicator').textContent = 'Not Listening';
+            document.getElementById('listening-indicator').style.color = 'red';
+        });
+    </script>
+</body>
+</html>
